@@ -119,3 +119,13 @@ button:hover {
 .download-section a:hover {
     text-decoration: underline;
 }
+
+.scrollable-content {
+    border: 1px solid #ccc;
+    padding: 10px;
+    height: 400px;
+    overflow-y: scroll;
+    white-space: pre-wrap;
+    font-family: 'Courier New', monospace;
+    text-align: left; 
+}

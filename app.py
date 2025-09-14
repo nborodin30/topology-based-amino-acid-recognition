@@ -40,14 +40,13 @@ def home():
 @app.route('/upload', methods=['POST'])
 def upload_file():
     """
-    Handles file upload, processing, and download.
+    Handles file upload and redirects to the version selection page.
     """
     if 'file' not in request.files:
         flash('No file part')
         return redirect(url_for('home'))
 
     file = request.files['file']
-    version = request.form.get('version')
 
     if file.filename == '':
         flash('No selected file')
@@ -57,33 +56,46 @@ def upload_file():
         filename = secure_filename(file.filename)
         upload_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(upload_path)
-        
-        # Determine which script to run based on the user's selection
-        processed_output_path = os.path.join(app.config['PROCESSED_FOLDER'], f'annotated_v1_{filename}')
-        
-        try:
-            if version == 'v1':
-                # Call the main function of Topology1.py
-                Topology1.process_sdf(upload_path, processed_output_path)
-            elif version == 'v2':
-               # Call the main function of Topology2.py
-                Topology2.process_sdf(upload_path, processed_output_path)
-            else:
-                flash('Please select a version.', 'error')
-                return redirect(url_for('home'))
 
-            flash(f'File processed successfully with Version {version.upper()}! You can download it below.')
-            
-            # Pass the processed file name to the template for download link
-            return render_template('index.html', processed_filename=os.path.basename(processed_output_path))
-
-        except Exception as e:
-            flash(f'An error occurred during processing: {e}', 'error')
-            return redirect(url_for('home'))
-
+        flash(f'File {filename} uploaded successfully. Please select a version to process it.')
+        return redirect(url_for('select_version', uploaded_filename=filename))
     else:
         flash('Invalid file type. Please upload a .sdf file.')
         return redirect(url_for('home'))
+
+@app.route('/select-version/<uploaded_filename>')
+def select_version(uploaded_filename):
+    """
+    Renders the page for selecting the processing version.
+    """
+    return render_template('select_version.html', uploaded_filename=uploaded_filename)
+
+@app.route('/process-file/<uploaded_filename>', methods=['POST'])
+def process_file(uploaded_filename):
+    """
+    Handles version selection, processes the file, and displays download link.
+    """
+    version = request.form.get('version')
+    upload_path = os.path.join(app.config['UPLOAD_FOLDER'], uploaded_filename)
+    processed_output_path = os.path.join(app.config['PROCESSED_FOLDER'], f'annotated_{version}_{uploaded_filename}')
+
+    try:
+        if version == 'v1':
+            Topology1.process_sdf(upload_path, processed_output_path)
+        elif version == 'v2':
+            Topology2.process_sdf(upload_path, processed_output_path)
+        else:
+            flash('Please select a valid version.', 'error')
+            return redirect(url_for('select_version', uploaded_filename=uploaded_filename))
+
+        flash(f'File processed successfully with {version.upper()}!')
+        with open(processed_output_path, 'r', encoding='utf-8') as f:
+            file_content = f.read()
+        return render_template('index.html', processed_filename=os.path.basename(processed_output_path), processed_content=file_content)
+    
+    except Exception as e:
+        flash(f'An error occurred during processing: {e}', 'error')
+        return redirect(url_for('select_version', uploaded_filename=uploaded_filename))
 
 @app.route('/download/<filename>')
 def download_file(filename):

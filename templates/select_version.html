@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Processing Version</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Select Processing Version</h1>
+        <p>Your file has been uploaded. Please choose a version to process it.</p>
+        
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul class="flashes">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('process_file', uploaded_filename=uploaded_filename) }}" method="post">
+            <div class="version-select">
+                <label><input type="radio" name="version" value="v1" required> Version 1</label>
+                <label><input type="radio" name="version" value="v2"> Version 2</label>
+            </div>
+            <button type="submit">Process</button>
+        </form>
+    </div>
+</body>
+</html>
