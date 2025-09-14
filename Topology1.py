@@ -1,15 +1,14 @@
 from itertools import islice
 import sys
+import os
 
-# Get file path from command-line argument
-if len(sys.argv) < 2:
-    print("Usage: python Topology1.py <sdf_file_path>")
-    sys.exit(1)
-file_path = sys.argv[1]
-
-# Read all lines of the raw data
-with open(file_path, "r") as sdf_file:
-    raw_data = sdf_file.readlines()
+def read_sdf(file_path):
+    """
+    Reads an SDF file and returns its lines.
+    """
+    with open(file_path, "r") as sdf_file:
+        raw_data = sdf_file.readlines()
+    return raw_data
 
 '''
 Extracts atoms and bonds from the SDF file.
@@ -23,7 +22,7 @@ def get_atoms_and_bond(df_sdf):
     bond_section = False
     
     # Parse the SDF file to extract atoms and bonds
-    for line in raw_data:
+    for line in df_sdf:
         if line.startswith("M  V30 BEGIN ATOM"):
             atom_section = True
             continue
@@ -430,16 +429,13 @@ def create_annotated_sdf(input_data, output_file, sides, backbone, atoms_with_bo
             else:
                 outfile.write(line)
 
-# Main execution
-atoms_with_bonds = get_atoms_and_bond(raw_data)
-backbone = all_NCCO(atoms_with_bonds)
-sides = side_chains(atoms_with_bonds, backbone)
-if 'group_0' in sides:
-    sides.pop('group_0')
-
-# Create annotated SDF file
-import os
-base_name = os.path.splitext(os.path.basename(file_path))[0]
-output_sdf_path = f"{base_name}-annotated.sdf"
-print(f"\nCreating annotated SDF file at {output_sdf_path}")
-create_annotated_sdf(raw_data, output_sdf_path, sides, backbone, atoms_with_bonds)
+def process_sdf(file_path, output_sdf_path):
+    """Processes the SDF file to annotate it with amino acid information."""
+    raw_data = read_sdf(file_path)
+    atoms_with_bonds = get_atoms_and_bond(raw_data)
+    backbone = all_NCCO(atoms_with_bonds)
+    sides = side_chains(atoms_with_bonds, backbone)
+    if 'group_0' in sides:
+        sides.pop('group_0')
+    print(f"\nCreating annotated SDF file at {output_sdf_path}")
+    create_annotated_sdf(raw_data, output_sdf_path, sides, backbone, atoms_with_bonds)

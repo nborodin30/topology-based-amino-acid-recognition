@@ -4,16 +4,13 @@ import networkx as nx
 from networkx.algorithms.isomorphism import GraphMatcher
 from grakel import Graph, GraphKernel
 
-import sys
-# Get file path from command-line argument
-if len(sys.argv) < 2:
-    print("Usage: python Topology2.py <sdf_file_path>")
-    sys.exit(1)
-file_path = sys.argv[1]
-
-# Read all lines of the raw data
-with open(file_path, "r") as sdf_file:
-    raw_data = sdf_file.readlines()
+def read_sdf(file_path):
+    """
+    Reads an SDF file and returns its lines.
+    """
+    with open(file_path, "r") as sdf_file:
+        raw_data = sdf_file.readlines()
+    return raw_data
 
 '''
 Parses the SDF data to create a NetworkX graph with atoms as nodes and bonds as edges.
@@ -749,7 +746,10 @@ def compare_graphs(graph1, graph2):
     nodes2 = sorted(attr for _, attr in graph2.nodes(data='atom'))
     if nodes1 != nodes2:
         return False
-    root1 = find_c_alpha(graph1, find_all_backbones_and_C_alpha(Graf)[1])
+    
+    # root1 is the C-alpha node in graph1
+    c_alphas_graph1 = find_all_backbones_and_C_alpha(graph1)[1]
+    root1 = find_c_alpha(graph1, c_alphas_graph1)
     root2 = 'Cα' 
     node_match = lambda x, y: x['atom'] == y['atom']
     edge_match = lambda x, y: x['bond_type'] == y['bond_type']
@@ -786,7 +786,6 @@ def identify_ac(graph, amino_acids, c_alphas):
             for letter in result:
                 if letter.isnumeric():
                     result = result.replace(letter, '')
-            
             break
     return result
 
@@ -846,15 +845,15 @@ Maps each atom to its corresponding amino acid based on the side chain analysis.
 Returns a dictionary where keys are atom IDs and values are amino acid codes.
 '''
 def map_atoms_to_amino_acids(data):
-    Graf = get_nodes_and_edges(data)
-    backbone = find_all_backbones_and_C_alpha(Graf)[0]
-    c_alphas = find_all_backbones_and_C_alpha(Graf)[1]
+    graph = get_nodes_and_edges(data)
+    backbone = find_all_backbones_and_C_alpha(graph)[0]
+    c_alphas = find_all_backbones_and_C_alpha(graph)[1]
     atom_to_aa = {}
 
     # First identify all side chains and their amino acid types
     side_chain_atoms = {}
     for side in c_alphas:
-        side_chain = extract_side_chain(side, backbone, c_alphas, Graf)
+        side_chain = extract_side_chain(side, backbone, c_alphas, graph)
         ac = identify_ac(side_chain, amino_acids, c_alphas)
 
         if not ac:
@@ -888,7 +887,7 @@ def map_atoms_to_amino_acids(data):
         # Simple distance calculation (in graph space)
         for ca in c_alphas:
             try:
-                distance = nx.shortest_path_length(Graf, atom, ca)
+                distance = nx.shortest_path_length(graph, atom, ca)
                 if distance < min_distance:
                     min_distance = distance
                     closest_ca = ca
@@ -944,13 +943,8 @@ def create_annotated_sdf(input_data, output_file):
             else:
                 outfile.write(line)
 
-# Main execution
-Graf = get_nodes_and_edges(raw_data)
-
-# Create the annotated SDF file
-import os
-base_name = os.path.splitext(os.path.basename(file_path))[0]
-output_sdf_path = f"{base_name}_annotated.sdf"
-print(f"\n\nCreating annotated SDF file at {output_sdf_path}")
-create_annotated_sdf(raw_data, output_sdf_path)
-print(f"Finished creating annotated SDF file with amino acid annotations.")
+def process_sdf(file_path, output_sdf_path):
+    """Processes the SDF file to annotate it with amino acid information using Topology2 logic."""
+    raw_data = read_sdf(file_path)
+    print(f"\nCreating annotated SDF file at {output_sdf_path}")
+    create_annotated_sdf(raw_data, output_sdf_path)
