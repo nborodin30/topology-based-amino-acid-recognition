@@ -10,11 +10,11 @@
     <h1>Amino Acid Recognition Tool</h1>
     <p>Upload your .sdf file for processing.</p>
 
-        {% with messages = get_flashed_messages() %}
+        {% with messages = get_flashed_messages(with_categories=True) %}
             {% if messages %}
                 <ul class="flashes">
-                {% for message in messages %}
-                    <li>{{ message }}</li>
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
                 {% endfor %}
                 </ul>
             {% endif %}
@@ -32,7 +32,7 @@
                 <a href="{{ url_for('download_file', filename=processed_filename) }}" download="{{ processed_filename }}">Download processed file</a>
             </div>
             <div class="viewer-section">
-                <h3>Annotated SDF Content:</h3>
+                <h3>Annotated Content:</h3>
                 <div class="scrollable-content">
                     <pre>{{ processed_content }}</pre>
                 </div>

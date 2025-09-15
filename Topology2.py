@@ -946,5 +946,4 @@ def create_annotated_sdf(input_data, output_file):
 def process_sdf(file_path, output_sdf_path):
     """Processes the SDF file to annotate it with amino acid information using Topology2 logic."""
     raw_data = read_sdf(file_path)
-    print(f"\nCreating annotated SDF file at {output_sdf_path}")
     create_annotated_sdf(raw_data, output_sdf_path)

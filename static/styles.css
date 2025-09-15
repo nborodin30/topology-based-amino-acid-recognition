@@ -1,4 +1,19 @@
-/* Version radio buttons styling */
+
+
+.flashes li {
+    background-color: #3ff436;
+    list-style: none;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    text-align: left;
+}
+.flashes li.error {
+    background-color: #f44336;
+    color: #fff;
+}
+
+
 .version-select {
     display: flex;
     gap: 30px;
@@ -95,8 +110,7 @@ button:hover {
 }
 
 .flashes li {
-    background-color: #e2f0e2;
-    color: #216d21;
+    list-style: none;
     padding: 10px;
     border-radius: 5px;
     margin-bottom: 10px;

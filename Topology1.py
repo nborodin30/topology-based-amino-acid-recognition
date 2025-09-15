@@ -437,5 +437,4 @@ def process_sdf(file_path, output_sdf_path):
     sides = side_chains(atoms_with_bonds, backbone)
     if 'group_0' in sides:
         sides.pop('group_0')
-    print(f"\nCreating annotated SDF file at {output_sdf_path}")
     create_annotated_sdf(raw_data, output_sdf_path, sides, backbone, atoms_with_bonds)

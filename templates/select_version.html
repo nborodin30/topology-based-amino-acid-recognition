@@ -7,8 +7,8 @@
 </head>
 <body>
     <div class="container">
-        <h1>Select Processing Version</h1>
-        <p>Your file has been uploaded. Please choose a version to process it.</p>
+        <h1>Select a processing method</h1>
+        <p>Please select a method to process it.</p>
         
         {% with messages = get_flashed_messages() %}
             {% if messages %}
@@ -22,8 +22,8 @@
 
         <form action="{{ url_for('process_file', uploaded_filename=uploaded_filename) }}" method="post">
             <div class="version-select">
-                <label><input type="radio" name="version" value="v1" required> Version 1</label>
-                <label><input type="radio" name="version" value="v2"> Version 2</label>
+                <label><input type="radio" name="version" value="v1" required> Rapid & Heuristic </label>
+                <label><input type="radio" name="version" value="v2"> Graph & Kernel-based </label>
             </div>
             <button type="submit">Process</button>
         </form>

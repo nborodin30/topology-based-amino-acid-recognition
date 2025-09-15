@@ -57,10 +57,10 @@ def upload_file():
         upload_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(upload_path)
 
-        flash(f'File {filename} uploaded successfully. Please select a version to process it.')
+        flash(f'File {filename} uploaded successfully.', 'success')
         return redirect(url_for('select_version', uploaded_filename=filename))
     else:
-        flash('Invalid file type. Please upload a .sdf file.')
+        flash('Invalid file type. Please upload a .sdf file.', 'error')
         return redirect(url_for('home'))
 
 @app.route('/select-version/<uploaded_filename>')
@@ -73,7 +73,7 @@ def select_version(uploaded_filename):
 @app.route('/process-file/<uploaded_filename>', methods=['POST'])
 def process_file(uploaded_filename):
     """
-    Handles version selection, processes the file, and displays download link.
+    Handles method selection, processes the file, and displays download link.
     """
     version = request.form.get('version')
     upload_path = os.path.join(app.config['UPLOAD_FOLDER'], uploaded_filename)
@@ -82,13 +82,14 @@ def process_file(uploaded_filename):
     try:
         if version == 'v1':
             Topology1.process_sdf(upload_path, processed_output_path)
+            flash('File processed successfully with the Rapid & Heuristic method!')
         elif version == 'v2':
             Topology2.process_sdf(upload_path, processed_output_path)
+            flash('File processed successfully with the Graph & Kernel-based method!')
         else:
-            flash('Please select a valid version.', 'error')
+            flash('Please select a valid method.', 'error')
             return redirect(url_for('select_version', uploaded_filename=uploaded_filename))
 
-        flash(f'File processed successfully with {version.upper()}!')
         with open(processed_output_path, 'r', encoding='utf-8') as f:
             file_content = f.read()
         return render_template('index.html', processed_filename=os.path.basename(processed_output_path), processed_content=file_content)
@@ -105,4 +106,4 @@ def download_file(filename):
     return send_from_directory(app.config['PROCESSED_FOLDER'], filename, as_attachment=True)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
